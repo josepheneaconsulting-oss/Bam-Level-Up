@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bradley Wrestling Level Up Tracker</title>
+  <style>
+    :root{
+      --bg:#eef3f8;
+      --card:#ffffff;
+      --text:#17212b;
+      --muted:#667085;
+      --line:#d4dde7;
+      --navy:#1f4e79;
+      --navy-dark:#173b5c;
+      --navy-soft:#dce8f5;
+      --gold:#c9961a;
+      --green:#15803d;
+      --orange:#b45309;
+      --shadow:0 10px 24px rgba(15,23,42,.08);
+      --radius:18px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:Arial, Helvetica, sans-serif;
+      background:linear-gradient(180deg,#eef3f8 0%,#e8eef5 100%);
+      color:var(--text);
+    }
+    .wrap{
+      max-width:1450px;
+      margin:0 auto;
+      padding:22px 14px 44px;
+    }
+    .hero{
+      background:linear-gradient(135deg,var(--navy-dark),var(--navy),#3e78a8);
+      color:#fff;
+      border-radius:24px;
+      padding:24px;
+      box-shadow:0 16px 36px rgba(31,78,121,.22);
+      margin-bottom:18px;
+    }
+    .hero h1{
+      margin:0 0 8px;
+      font-size:clamp(28px,4vw,44px);
+    }
+    .hero p{
+      margin:6px 0;
+      max-width:860px;
+      line-height:1.45;
+      color:rgba(255,255,255,.92);
+    }
+    .summary{
+      display:grid;
+      grid-template-columns:repeat(4,minmax(160px,1fr));
+      gap:12px;
+      margin-top:18px;
+    }
+    @media (max-width:900px){
+      .summary{grid-template-columns:repeat(2,minmax(140px,1fr))}
+    }
+    @media (max-width:520px){
+      .summary{grid-template-columns:1fr 1fr}
+    }
+    .stat{
+      background:rgba(255,255,255,.14);
+      border:1px solid rgba(255,255,255,.18);
+      border-radius:16px;
+      padding:14px;
+    }
+    .label{
+      font-size:12px;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+      opacity:.92;
+    }
+    .value{
+      margin-top:6px;
+      font-weight:800;
+      font-size:30px;
+      line-height:1.05;
+    }
+    .layout{
+      display:grid;
+      grid-template-columns:1.6fr .8fr;
+      gap:18px;
+      align-items:start;
+    }
+    @media (max-width:1150px){
+      .layout{grid-template-columns:1fr}
+    }
+    .card{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      overflow:hidden;
+    }
+    .card-head{
+      padding:18px 18px 10px;
+    }
+    .card-head h2{
+      margin:0 0 6px;
+      font-size:24px;
+    }
+    .card-head p{
+      margin:0;
+      color:var(--muted);
+      line-height:1.45;
+    }
+    .controls{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      padding:0 18px 16px;
+    }
+    button{
+      border:none;
+      cursor:pointer;
+      border-radius:12px;
+      padding:11px 14px;
+      font-weight:700;
+      font-size:14px;
+      transition:.18s ease;
+    }
+    button:hover{transform:translateY(-1px)}
+    .btn-primary{background:var(--navy); color:#fff;}
+    .btn-dark{background:#0f172a; color:#fff;}
+    .btn-light{background:#e7eef6; color:var(--navy-dark);}
+    .btn-gold{background:var(--gold); color:#fff;}
+    .progress-wrap{
+      padding:0 18px 16px;
+    }
+    .progress{
+      height:20px;
+      border-radius:999px;
+      background:#e8edf3;
+      overflow:hidden;
+      border:1px solid #dbe4ee;
+    }
+    .progress-bar{
+      height:100%;
+      width:0%;
+      background:linear-gradient(90deg,var(--navy),#2f77b7,var(--green));
+      transition:width .25s ease;
+    }
+    .goal-text{
+      margin-top:8px;
+      font-weight:700;
+      font-size:14px;
+    }
+    .table-wrap{
+      padding:0 10px 12px;
+      overflow:auto;
+    }
+    table{
+      width:100%;
+      min-width:1200px;
+      border-collapse:separate;
+      border-spacing:0;
+      font-size:14px;
+    }
+    thead th{
+      position:sticky;
+      top:0;
+      z-index:2;
+      background:var(--navy);
+      color:#fff;
+      font-size:12px;
+      text-transform:uppercase;
+      letter-spacing:.05em;
+      border-bottom:1px solid #173b5a;
+      white-space:nowrap;
+    }
+    th, td{
+      padding:10px 8px;
+      border-right:1px solid var(--line);
+      border-bottom:1px solid var(--line);
+      text-align:center;
+      vertical-align:middle;
+      background:#fff;
+    }
+    th:first-child, td:first-child{border-left:1px solid var(--line)}
+    thead th:first-child{border-top-left-radius:12px}
+    thead th:last-child{border-top-right-radius:12px}
+    td.left{text-align:left}
+    .cat-cell{font-weight:700}
+    .category-strength td{background:#f7fbff}
+    .category-wrestling td{background:#fbfdff}
+    .category-conditioning td{background:#fffdfa}
+    .cat-tag{
+      display:inline-block;
+      font-size:12px;
+      border-radius:999px;
+      padding:5px 9px;
+      font-weight:700;
+      white-space:nowrap;
+    }
+    .tag-strength{background:#dbeafe;color:#1d4ed8}
+    .tag-wrestling{background:#e0f2fe;color:#0369a1}
+    .tag-conditioning{background:#fef3c7;color:#a16207}
+    .pts{
+      font-weight:800;
+      color:var(--navy);
+    }
+    select{
+      width:64px;
+      padding:6px 6px;
+      border-radius:10px;
+      border:1px solid #cfd8e3;
+      background:#fff;
+      font-weight:700;
+      color:var(--navy-dark);
+    }
+    .week-total{
+      font-weight:800;
+      color:var(--green);
+      background:#f6fbf7 !important;
+    }
+    .totals-row td{
+      background:#f3f6fa;
+      font-weight:800;
+    }
+    .totals-row .label-cell{
+      text-align:right;
+      font-size:18px;
+      color:#111827;
+    }
+    .side{
+      padding:18px;
+    }
+    .section-title{
+      margin:0 0 12px;
+      font-size:21px;
+    }
+    .mini-grid{
+      display:grid;
+      gap:12px;
+    }
+    .mini-card{
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:14px;
+      background:#fbfdff;
+    }
+    .mini-card h3{
+      margin:0 0 10px;
+      font-size:17px;
+    }
+    .mini-card p{
+      margin:0;
+      color:var(--muted);
+      line-height:1.45;
+    }
+    .cat-summary{
+      display:flex;
+      justify-content:space-between;
+      gap:8px;
+      align-items:center;
+      margin:8px 0;
+      padding:10px 12px;
+      border:1px solid var(--line);
+      border-radius:12px;
+      background:#fff;
+    }
+    .cat-summary span{font-weight:800}
+    .badge-row{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      margin-top:10px;
+    }
+    .badge{
+      padding:6px 10px;
+      border-radius:999px;
+      font-size:12px;
+      font-weight:700;
+      background:var(--navy-soft);
+      color:var(--navy-dark);
+    }
+    .foot{
+      padding:0 18px 18px;
+      color:var(--muted);
+      font-size:12px;
+      line-height:1.45;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="hero">
+      <h1>Bradley Wrestling Level Up Tracker</h1>
+      <p>This version is built properly as a real interactive HTML tracker. Use the dropdown in each day cell to mark <strong>Done</strong> or leave it blank. Totals update automatically across each row, each day, each category, and the full week.</p>
+      <p>Weekly goal: <strong>500 points</strong>.</p>
+
+      <div class="summary">
+        <div class="stat">
+          <div class="label">Weekly Total</div>
+          <div class="value" id="weeklyTotal">0</div>
+        </div>
+        <div class="stat">
+          <div class="label">Points Remaining</div>
+          <div class="value" id="pointsRemaining">500</div>
+        </div>
+        <div class="stat">
+          <div class="label">Daily Avg Needed</div>
+          <div class="value" id="dailyAvgNeeded">72</div>
+        </div>
+        <div class="stat">
+          <div class="label">Status</div>
+          <div class="value" id="statusText">Start</div>
+        </div>
+      </div>
+    </section>
+
+    <div class="layout">
+      <section class="card">
+        <div class="card-head">
+          <h2>Weekly Performance Grid</h2>
+          <p>This follows the spreadsheet structure, but now it actually works as a proper tracker with dropdown menus, automatic totals, local save, and a clean athlete dashboard style.</p>
+        </div>
+
+        <div class="controls">
+          <button class="btn-primary" id="resetWeek">Reset Weekly Tracker</button>
+          <button class="btn-light" id="fillDemo">Load Demo Week</button>
+          <button class="btn-dark" id="clearDemo">Clear Demo</button>
+          <button class="btn-gold" id="printView">Print / Save PDF</button>
+        </div>
+
+        <div class="progress-wrap">
+          <div class="progress" aria-label="Weekly progress">
+            <div class="progress-bar" id="progressBar"></div>
+          </div>
+          <div class="goal-text" id="goalText">0 / 500 points</div>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Category</th>
+                <th style="text-align:left">Activity</th>
+                <th>Pts / Complete</th>
+                <th>Mon</th>
+                <th>Tue</th>
+                <th>Wed</th>
+                <th>Thu</th>
+                <th>Fri</th>
+                <th>Sat</th>
+                <th>Sun</th>
+                <th>Weekly Total</th>
+              </tr>
+            </thead>
+            <tbody id="trackerBody"></tbody>
+            <tfoot>
+              <tr class="totals-row">
+                <td colspan="3" class="label-cell">Daily Total Points</td>
+                <td id="day-total-0">0</td>
+                <td id="day-total-1">0</td>
+                <td id="day-total-2">0</td>
+                <td id="day-total-3">0</td>
+                <td id="day-total-4">0</td>
+                <td id="day-total-5">0</td>
+                <td id="day-total-6">0</td>
+                <td id="grandWeekly">0</td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+
+        <div class="foot">
+          Upload this file as <strong>index.html</strong> to your GitHub repository, then enable GitHub Pages. Progress saves automatically in the browser.
+        </div>
+      </section>
+
+      <aside class="card">
+        <div class="side">
+          <h2 class="section-title">Weekly Snapshot</h2>
+
+          <div class="mini-grid">
+            <div class="mini-card">
+              <h3>Category Totals</h3>
+              <div id="categorySummary"></div>
+            </div>
+
+            <div class="mini-card">
+              <h3>How the dropdown works</h3>
+              <p>Each day cell has a dropdown with two options: blank or <strong>Done</strong>. When you select <strong>Done</strong>, that activity’s point value is added automatically for that day and for the full week.</p>
+              <div class="badge-row">
+                <span class="badge">Dropdown Menu</span>
+                <span class="badge">Auto Totals</span>
+                <span class="badge">500 Point Goal</span>
+                <span class="badge">Auto Save</span>
+              </div>
+            </div>
+
+            <div class="mini-card">
+              <h3>Built around Bradley’s categories</h3>
+              <p><strong>Strength</strong>, <strong>Wrestling</strong>, and <strong>Conditioning</strong> are separated clearly so the weekly score shows where the work is really happening.</p>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <script>
+    const weeklyGoal = 500;
+    const storageKey = "bradley-wrestling-level-up-proper-v1";
+    const days = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+
+    const rows = [
+      {category:"Strength", cls:"strength", activity:"Push-Ups (3x50)", points:25},
+      {category:"Strength", cls:"strength", activity:"Squats (3x25)", points:10},
+      {category:"Strength", cls:"strength", activity:"Pull-Ups (3x10)", points:15},
+      {category:"Strength", cls:"strength", activity:"Burpees (7 min)", points:20},
+      {category:"Strength", cls:"strength", activity:"Battle Ropes (4 rounds)", points:12},
+      {category:"Strength", cls:"strength", activity:"DB Lunges (3x8 each leg)", points:10},
+      {category:"Strength", cls:"strength", activity:"Planks (3x2 min)", points:12},
+
+      {category:"Wrestling", cls:"wrestling", activity:"100 Perfect Shots", points:15},
+      {category:"Wrestling", cls:"wrestling", activity:"50 Setups to Shot", points:12},
+      {category:"Wrestling", cls:"wrestling", activity:"30 Stand-Ups", points:12},
+      {category:"Wrestling", cls:"wrestling", activity:"Drill to Score (20 reps)", points:15},
+      {category:"Wrestling", cls:"wrestling", activity:"5 Hard Live Goes", points:20},
+      {category:"Wrestling", cls:"wrestling", activity:"Situational Wrestling (10 min)", points:15},
+      {category:"Wrestling", cls:"wrestling", activity:"Film Study + 3 Adjustments", points:12},
+
+      {category:"Conditioning", cls:"conditioning", activity:"2 Mile Run", points:20},
+      {category:"Conditioning", cls:"conditioning", activity:"10 Sprint Intervals", points:15},
+      {category:"Conditioning", cls:"conditioning", activity:"Incline Sprints", points:15},
+      {category:"Conditioning", cls:"conditioning", activity:"100 Burpees", points:20},
+      {category:"Conditioning", cls:"conditioning", activity:"Match Simulation (6 min x 3 rounds)", points:25},
+    ];
+
+    function categoryTag(category, cls){
+      const tagClass = cls === "strength" ? "tag-strength" : cls === "wrestling" ? "tag-wrestling" : "tag-conditioning";
+      return `<span class="cat-tag ${tagClass}">${category}</span>`;
+    }
+
+    function makeSelect(id, rowIndex, dayIndex, points, category){
+      return `
+        <select id="${id}" data-row="${rowIndex}" data-day="${dayIndex}" data-points="${points}" data-category="${category}">
+          <option value="">--</option>
+          <option value="1">Done</option>
+        </select>
+      `;
+    }
+
+    function buildTable() {
+      const body = document.getElementById("trackerBody");
+      body.innerHTML = "";
+
+      rows.forEach((row, rIndex) => {
+        const tr = document.createElement("tr");
+        tr.className = `category-${row.cls}`;
+
+        let html = `
+          <td class="cat-cell">${categoryTag(row.category, row.cls)}</td>
+          <td class="left"><strong>${row.activity}</strong></td>
+          <td class="pts">${row.points}</td>
+        `;
+
+        days.forEach((d, dayIndex) => {
+          const id = `r${rIndex}-d${dayIndex}`;
+          html += `<td>${makeSelect(id, rIndex, dayIndex, row.points, row.category)}</td>`;
+        });
+
+        html += `<td class="week-total" id="row-total-${rIndex}">0</td>`;
+        tr.innerHTML = html;
+        body.appendChild(tr);
+      });
+
+      document.querySelectorAll("select[data-row]").forEach(sel => {
+        sel.addEventListener("change", saveAndRender);
+      });
+
+      loadState();
+      render();
+    }
+
+    function getState(){
+      const state = {};
+      document.querySelectorAll("select[data-row]").forEach(sel => {
+        state[sel.id] = sel.value;
+      });
+      return state;
+    }
+
+    function saveState(){
+      localStorage.setItem(storageKey, JSON.stringify(getState()));
+    }
+
+    function loadState(){
+      const raw = localStorage.getItem(storageKey);
+      if(!raw) return;
+      try{
+        const state = JSON.parse(raw);
+        Object.entries(state).forEach(([id, value]) => {
+          const el = document.getElementById(id);
+          if(el) el.value = value;
+        });
+      }catch(err){
+        console.error("Unable to load saved state", err);
+      }
+    }
+
+    function saveAndRender(){
+      saveState();
+      render();
+    }
+
+    function render(){
+      const dayTotals = Array(days.length).fill(0);
+      const categoryTotals = {Strength:0, Wrestling:0, Conditioning:0};
+      let weeklyTotal = 0;
+
+      rows.forEach((row, rIndex) => {
+        let rowTotal = 0;
+        days.forEach((d, dayIndex) => {
+          const sel = document.getElementById(`r${rIndex}-d${dayIndex}`);
+          if(sel && sel.value === "1"){
+            rowTotal += row.points;
+            dayTotals[dayIndex] += row.points;
+            weeklyTotal += row.points;
+            categoryTotals[row.category] += row.points;
+          }
+        });
+        document.getElementById(`row-total-${rIndex}`).textContent = rowTotal;
+      });
+
+      dayTotals.forEach((total, i) => {
+        document.getElementById(`day-total-${i}`).textContent = total;
+      });
+
+      document.getElementById("grandWeekly").textContent = weeklyTotal;
+      document.getElementById("weeklyTotal").textContent = weeklyTotal;
+      document.getElementById("pointsRemaining").textContent = Math.max(weeklyGoal - weeklyTotal, 0);
+      document.getElementById("dailyAvgNeeded").textContent = Math.ceil(Math.max(weeklyGoal - weeklyTotal, 0) / 7);
+      document.getElementById("goalText").textContent = `${weeklyTotal} / ${weeklyGoal} points`;
+      document.getElementById("progressBar").style.width = `${Math.min((weeklyTotal / weeklyGoal) * 100, 100)}%`;
+
+      const statusText = document.getElementById("statusText");
+      if(weeklyTotal >= weeklyGoal){
+        statusText.textContent = "Goal Hit";
+      }else if(weeklyTotal >= 350){
+        statusText.textContent = "Strong Week";
+      }else if(weeklyTotal >= 200){
+        statusText.textContent = "Building";
+      }else{
+        statusText.textContent = "Start";
+      }
+
+      const box = document.getElementById("categorySummary");
+      box.innerHTML = `
+        <div class="cat-summary"><strong>Strength</strong><span>${categoryTotals.Strength} pts</span></div>
+        <div class="cat-summary"><strong>Wrestling</strong><span>${categoryTotals.Wrestling} pts</span></div>
+        <div class="cat-summary"><strong>Conditioning</strong><span>${categoryTotals.Conditioning} pts</span></div>
+      `;
+    }
+
+    function clearAll(){
+      document.querySelectorAll("select[data-row]").forEach(sel => sel.value = "");
+      saveAndRender();
+    }
+
+    document.getElementById("resetWeek").addEventListener("click", () => {
+      if(confirm("Reset Bradley's full weekly tracker?")){
+        localStorage.removeItem(storageKey);
+        clearAll();
+      }
+    });
+
+    document.getElementById("clearDemo").addEventListener("click", () => {
+      clearAll();
+    });
+
+    document.getElementById("fillDemo").addEventListener("click", () => {
+      clearAll();
+      const demo = [
+        "r0-d0","r2-d0","r7-d0","r14-d0",
+        "r1-d1","r8-d1","r15-d1",
+        "r3-d2","r10-d2","r16-d2",
+        "r4-d3","r11-d3","r17-d3",
+        "r5-d4","r12-d4","r18-d4",
+        "r6-d5","r9-d5","r13-d5",
+        "r0-d6","r7-d6","r14-d6"
+      ];
+      demo.forEach(id => {
+        const el = document.getElementById(id);
+        if(el) el.value = "1";
+      });
+      saveAndRender();
+    });
+
+    document.getElementById("printView").addEventListener("click", () => {
+      window.print();
+    });
+
+    buildTable();
+  </script>
+</body>
+</html>
